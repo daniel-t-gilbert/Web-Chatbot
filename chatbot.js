@@ -60,7 +60,7 @@
 
   async function getBotResponse(userMessage) {
     try {
-      let response = await fetch("https://web-chatbot-server.onrender.com/chat", {
+      let response = await fetch("https://web-chatbot-server.onrender.com/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage }),
