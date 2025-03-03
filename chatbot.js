@@ -1,11 +1,10 @@
-// chatbot.js - Injects the chat widget into any website
-(function() {
-    if (window.chatbotLoaded) return;
-    window.chatbotLoaded = true;
+(function () {
+  if (window.chatbotLoaded) return;
+  window.chatbotLoaded = true;
 
-    let chatWidget = document.createElement("div");
-    chatWidget.id = "chat-widget";
-    chatWidget.innerHTML = `
+  let chatWidget = document.createElement("div");
+  chatWidget.id = "chat-widget";
+  chatWidget.innerHTML = `
         <style>
             #chat-widget {
                 position: fixed; bottom: 20px; right: 20px;
@@ -22,12 +21,10 @@
                 flex: 1; padding: 10px; overflow-y: auto;
             }
             #chat-input {
-                display: flex; padding: 5px;
-                border-top: 1px solid #ddd;
+                display: flex; padding: 5px; border-top: 1px solid #ddd;
             }
             #chat-input input {
-                flex: 1; padding: 8px; border: none;
-                outline: none;
+                flex: 1; padding: 8px; border: none; outline: none;
             }
             #chat-input button {
                 padding: 8px; background: #007bff; color: white;
@@ -41,35 +38,47 @@
             <button id="chat-send">Send</button>
         </div>
     `;
-    document.body.appendChild(chatWidget);
+  document.body.appendChild(chatWidget);
 
-    let chatBody = document.getElementById("chat-body");
-    let chatText = document.getElementById("chat-text");
-    let chatSend = document.getElementById("chat-send");
+  let chatBody = document.getElementById("chat-body");
+  let chatText = document.getElementById("chat-text");
+  let chatSend = document.getElementById("chat-send");
 
-    function appendMessage(text, sender) {
-        let message = document.createElement("div");
-        message.textContent = text;
-        message.style.padding = "8px";
-        message.style.margin = "5px";
-        message.style.borderRadius = "5px";
-        message.style.background = sender === "bot" ? "#eee" : "#007bff";
-        message.style.color = sender === "bot" ? "black" : "white";
-        message.style.alignSelf = sender === "bot" ? "flex-start" : "flex-end";
-        message.style.maxWidth = "80%";
-        chatBody.appendChild(message);
-        chatBody.scrollTop = chatBody.scrollHeight;
+  function appendMessage(text, sender) {
+    let message = document.createElement("div");
+    message.textContent = text;
+    message.style.padding = "8px";
+    message.style.margin = "5px";
+    message.style.borderRadius = "5px";
+    message.style.background = sender === "bot" ? "#eee" : "#007bff";
+    message.style.color = sender === "bot" ? "black" : "white";
+    message.style.alignSelf = sender === "bot" ? "flex-start" : "flex-end";
+    message.style.maxWidth = "80%";
+    chatBody.appendChild(message);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  async function getBotResponse(userMessage) {
+    try {
+      let response = await fetch("https://web-chatbot-server.onrender.com/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage }),
+      });
+      let data = await response.json();
+      return data.reply;
+    } catch (error) {
+      return "Sorry, I am having trouble responding right now.";
     }
+  }
 
-    chatSend.addEventListener("click", () => {
-        let userMessage = chatText.value.trim();
-        if (!userMessage) return;
-        appendMessage(userMessage, "user");
-        chatText.value = "";
+  chatSend.addEventListener("click", async () => {
+    let userMessage = chatText.value.trim();
+    if (!userMessage) return;
+    appendMessage(userMessage, "user");
+    chatText.value = "";
 
-        setTimeout(() => {
-            let botReply = "I am a simple chatbot. How can I help you?";
-            appendMessage(botReply, "bot");
-        }, 500);
-    });
+    let botReply = await getBotResponse(userMessage);
+    appendMessage(botReply, "bot");
+  });
 })();
